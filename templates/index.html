@@ -1,0 +1,230 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nutrient Planner</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f0f0f0;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        fieldset {
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        legend {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        #result {
+            margin-top: 20px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            overflow-x: auto; /* Enable horizontal scrolling on smaller screens */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #007BFF;
+            color: white;
+        }
+        td {
+            background-color: #fff;
+        }
+    </style>
+    <script>
+        // Function to handle form submission
+        function submitForm() {
+            // Get selected values
+            let highColumns = getSelectedColumns("high");
+            let lowColumns = getSelectedColumns("low");
+            let excludeColumns = getSelectedColumns("exclude");
+
+            // Create form data
+            let formData = new FormData();
+            formData.append("high_columns", highColumns.join(","));
+            formData.append("low_columns", lowColumns.join(","));
+            formData.append("exclude_columns", excludeColumns.join(","));
+
+            // Send POST request
+            fetch('/recommend/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                // Display response or handle as needed
+                document.getElementById("result").innerHTML = data;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+
+        // Function to get selected columns for high, low, or exclude
+        function getSelectedColumns(type) {
+            let selectedColumns = [];
+            let checkboxes = document.getElementsByName(type + "-column");
+            for (let i = 0; i < checkboxes.length; i++) {
+                if (checkboxes[i].checked) {
+                    selectedColumns.push(checkboxes[i].value);
+                }
+            }
+            return selectedColumns;
+        }
+
+        // Function to select all columns in Exclude Columns by default
+        function selectAllExcludeColumns() {
+            let checkboxes = document.getElementsByName("exclude-column");
+            for (let i = 0; i < checkboxes.length; i++) {
+                checkboxes[i].checked = true;
+            }
+        }
+
+        // Call selectAllExcludeColumns() when the page loads
+        window.onload = function() {
+            selectAllExcludeColumns();
+        };
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Nutrient Planner</h1>
+            <p>Select columns to recommend foods based on nutrient content.</p>
+        </div>
+        
+        <!-- Form to select columns -->
+        <form onsubmit="event.preventDefault(); submitForm();" class="form-grid">
+            <fieldset>
+                <legend>Select High Columns:</legend>
+                {% for col in columns %}
+                <label>
+                    <input type="checkbox" name="high-column" value="{{ col }}"> {{ col }}
+                </label>
+                {% endfor %}
+            </fieldset>
+        
+            <fieldset>
+                <legend>Select Low Columns:</legend>
+                {% for col in columns %}
+                <label>
+                    <input type="checkbox" name="low-column" value="{{ col }}"> {{ col }}
+                </label>
+                {% endfor %}
+            </fieldset>
+        
+            <fieldset>
+                <legend>Select Exclude Columns:</legend>
+                {% for col in columns %}
+                <label>
+                    <input type="checkbox" name="exclude-column" value="{{ col }}" checked> {{ col }}
+                </label>
+                {% endfor %}
+            </fieldset>
+        
+            <!-- Submit button -->
+            <button type="submit">Recommend Foods</button>
+        </form>
+    
+        <!-- Display result here -->
+        <div id="result">
+            <table>
+                <thead>
+                    {% if foods %}
+                    <tr>
+                        <th>Food</th>
+                        <th>Carbohydrates</th>
+                        <th>Protein</th>
+                        <th>Fat</th>
+                        <th>Caloric Value</th>
+                        <th>Nutrition Density</th>
+                        <th>Vitamin A</th>
+                        <th>Vitamin B1</th>
+                        <th>Vitamin B6</th>
+                        <th>Vitamin B12</th>
+                        <th>Vitamin C</th>
+                        <th>Vitamin D</th>
+                        <th>Calcium</th>
+                        <th>Iron</th>
+                        <th>Magnesium</th>
+                        <th>Zinc</th>
+                    </tr>
+                    {% endif %}
+                </thead>
+                <tbody>
+                    {% if foods %}
+                    {% for food in foods %}
+                    <tr>
+                        <td>{{ food.food }}</td>
+                        <td>{{ food.Carbohydrates }}</td>
+                        <td>{{ food.Protein }}</td>
+                        <td>{{ food.Fat }}</td>
+                        <td>{{ food["Caloric Value"] }}</td>
+                        <td>{{ food["Nutrition Density"] }}</td>
+                        <td>{{ food["Vitamin A"] }}</td>
+                        <td>{{ food["Vitamin B1"] }}</td>
+                        <td>{{ food["Vitamin B6"] }}</td>
+                        <td>{{ food["Vitamin B12"] }}</td>
+                        <td>{{ food["Vitamin C"] }}</td>
+                        <td>{{ food["Vitamin D"] }}</td>
+                        <td>{{ food.Calcium }}</td>
+                        <td>{{ food.Iron }}</td>
+                        <td>{{ food.Magnesium }}</td>
+                        <td>{{ food.Zinc }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recommended Foods</title>
+</head>
+<body>
+    <h2>Recommended Foods</h2>
+    {% if foods %}
+    <table border="1">
+        <thead>
+            <tr>
+                {% for col in foods[0].keys() %}
+                <th>{{ col }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for food in foods %}
+            <tr>
+                {% for val in food.values() %}
+                <td>{{ val }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No recommended foods found based on your selections.</p>
+    {% endif %}
+</body>
+</html>
